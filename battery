@@ -1,2 +1,4 @@
 #!/bin/sh
+# check battery status
+# TODO: add options to display percentage battery left
 upower -i /org/freedesktop/UPower/devices/battery_BAT0 | grep 'time to empty' | awk '{print "battery life: " $4,$5}'
