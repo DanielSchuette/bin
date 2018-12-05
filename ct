@@ -1,0 +1,3 @@
+#!/bin/sh
+# display the current time in a convenient format
+date | awk '{print $4}'
