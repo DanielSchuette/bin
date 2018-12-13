@@ -1,0 +1,13 @@
+#!/bin/sh
+# echo arguments
+echo "working on file: $1, arguments: $2, $3, $4, $5, $6"
+
+# set meta data for a song
+id3v2 --artist $2 $1
+id3v2 --song $3 $1 
+id3v2 --album $4 $1
+id3v2 --year $5 $1
+id3v2 --genre $6 $1
+
+# show resulting tags
+id3v2 --list $1
