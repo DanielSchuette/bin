@@ -1,0 +1,40 @@
+#!/bin/sh
+# connect to a know wpa2 network for the first time
+#
+# most of the following commands need to be
+# run from within a root shell
+# if the device name is not know:
+# $iw dev
+# if the device is not up ($ip link show <device_name>),
+# you might need:
+# $ip link set <device_name> up
+# although this screwed up my arch install once
+# to check the connection status, run:
+# $iw <device_name> link
+# to scan for networks, run:
+# $iw <device_name> scan
+# this also gives information about the
+# encryption status of a particular network
+nw_name=$1
+interface=$2
+echo "type in your passphrase:"
+wpa_passphrase nw_name >> /etc/wpa_supplicant/wpa_supplicant.conf
+echo "confirm the network information below:"
+cat /etc/wpa_supplicant/wpa_supplicant.conf
+wpa_supplicant -B -i interface -c /etc/wpa_supplicant/wpa_supplicant.conf
+echo "connection status:"
+iw interface link
+
+# lastly, obtain ip address
+dhclient interface
+echo "ip address:"
+ip addr show interface
+
+# ensure a proper routing table
+echo "routing:"
+ip route show
+# ip route add default via 192.168.1.254 dev interface
+
+# ping an external ip
+echo "pinging external ip:"
+ping https://archlinux.org
