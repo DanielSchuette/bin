@@ -1,0 +1,3 @@
+# ignore Bochs man files
+man/*
+share/*
