@@ -1,3 +1,5 @@
 #!/bin/sh
 firefox &
-xdotool search --sync --onlyvisible --class "Firefox" windowactivate key F11
+
+# should put the firefox window into full screen mode
+xdotool search --sync --onlyvisible --class "firefox" windowactivate key F11
