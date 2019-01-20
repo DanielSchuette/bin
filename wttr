@@ -1,0 +1,6 @@
+#!/bin/sh
+# get weather information 
+# (requires network connection)
+curl --silent https://wttr.in | grep Weather -A 6 > .tmp 
+cat .tmp
+rm .tmp
