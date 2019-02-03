@@ -2,4 +2,4 @@
 # start a screen recording using the x11grab device
 dims=$(xrandr | grep 'current' | awk '{ print $8$9$10 }' | sed 's/,$//')
 echo $dims
-ffmpeg -video_size $dims -framerate 60 -f x11grab -i :0.0 output.mp4
+ffmpeg -draw_mouse 1 -y -video_size $dims -framerate 60 -f x11grab -i :0.0 -f alsa -i hw:1 -c:v libx264 -pix_fmt yuv420p -b:v 2500k -c:a aac -strict -2 -b:a 192k -movflags +faststart output.mp4
