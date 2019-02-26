@@ -1,3 +1,15 @@
 # ignore Bochs man files
 man/*
 share/*
+
+# binaries that other programs installed into ~/bin/
+# they're mostly compiled and thus are not portable
+bundle
+bundler
+nokogiri
+outfile
+rackup
+rails
+rake
+sprockets
+thor
