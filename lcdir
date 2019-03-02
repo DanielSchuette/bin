@@ -1,7 +1,7 @@
 #!/bin/sh
 # determine line count recursively
 # a particular file extension is optional
-if [ $2 != "" ]; then
+if [ "$2" != "" ]; then
     ext=$2
 else
     ext='*'
@@ -9,4 +9,4 @@ fi
 
 echo "looking for $ext in $1"
 
-find $1 -name "$ext"| xargs wc -l
+find "$1" -name "$ext"| xargs wc -l

@@ -1,16 +1,17 @@
-#!/bin/sh
-# check battery status with respect to charging status
+#!/bin/bash
+# Check battery status with respect to charging status.
+# Should work under most linux distributions.
 battery=$(upower -e | grep 'BAT')
-state=$(upower -i $battery | grep 'state' | awk '{print $2}')
-life=$(upower -i $battery | grep 'time to empty' | awk '{print "battery life: " $4,$5}')
-perc=$(upower -i $battery | grep 'percent' | awk '{print $1,$2}')
+state=$(upower -i "$battery" | grep 'state' | awk '{print $2}')
+life=$(upower -i "$battery" | grep 'time to empty' | awk '{print "battery life: " $4,$5}')
+perc=$(upower -i "$battery" | grep 'percent' | awk '{print $1,$2}')
 
 # check if charging
-if [ "$state" == "charging" ]; then
+if [[ "$state" == "charging" ]]; then
     echo "I'm charging"
 else
-    echo $life
+    echo "$life"
 fi
 
 # print battery percentage
-echo $perc
+echo "$perc"

@@ -1,0 +1,111 @@
+#!/bin/bash
+# Select files with fzf and open them in the default editor.
+PROG=fuz # program name as displayed in help and error messages
+DEPTH_DEFAULT=3 # default depth for `find'
+
+# test if fzf is installed and EDITOR was set
+if [[ -z $(command -v fzf) ]]; then
+    printf "%s: error: fzf is not installed\n" "$PROG"
+    exit 1
+elif [[ -z $EDITOR ]]; then
+    printf "%s: using vim as the default editor (change by setting EDITOR)\n" "$PROG"
+    EDITOR=vim
+fi
+
+# declare array for positional arguments
+# currently, it is not used for anything (but it might be)
+declare -a POSITIONAL
+
+# loop while number of arguments is greater than 0
+while [[ $# -gt 0 ]]; do
+    arg="$1"
+    case $arg in
+        -h|--help )
+            printf "Select files with fzf and open them in the default editor.\n"
+            printf "%s uses the editor that is specified by the EDITOR environment variable.\n" "$PROG"
+            printf "If EDITOR is not set, vim will be used by default.\n"
+            printf "\n"
+            printf "Usage: %s [options]\n" "$PROG"
+            printf "\n"
+            printf "Options:\n"
+            printf "\t-d, --directory=DIRECTORY\tPath to a directory from which to select files.\n"
+            printf "\t-e, --exclude=PATTERN\t\tFiles matching this pattern will be ignored up front. If no\n"
+            printf "\t\t\t\t\tpattern is provided, files in .git/ are ignored by default.\n"
+            printf "\t\t\t\t\tUse single quotes to escape PATTERN and avoid shell expansion.\n"
+            printf "\t-p, --depth=INT\t\t\tSearch depth. Defaults to %s.\n" "$DEPTH_DEFAULT"
+            printf "\t-n, --name=NAME\t\t\tSearch for a specific file name (case insensitive, don't quote).\n"
+            printf "\t-u, --home\t\t\tSearch user's home directory. Overrides --directory.\n"
+            printf "\n"
+            printf "\t-h, --help\t\t\tDisplay this help message.\n"
+            printf "\n"
+            exit 0
+        ;;
+        -d|--directory )
+            DIRECTORY="$2"
+            shift # shift flag
+            shift # shift flag's value
+        ;;
+        -e|--exclude )
+            EXCLUDE_PATTERN="$2"
+            shift
+            shift
+        ;;
+        -u|--home )
+            FIND_IN_HOME="true"
+            shift
+        ;;
+        -p|--depth )
+            DEPTH="$2"
+            shift
+            shift
+        ;;
+        -n|--name )
+            NAME="$2"
+            shift
+            shift
+        ;;
+        # lastly, match any other argument and append it
+        # to an array of positional arguments
+        * )
+            POSITIONAL+=("$1")
+            shift
+            ;;
+    esac
+done
+
+
+# if --home was set, set directory to home dir
+if [[ -n $FIND_IN_HOME ]]; then
+    DIRECTORY=$HOME
+fi
+
+# if no directory and no --home flag were provided, set directory to pwd
+if [[ -z $DIRECTORY ]]; then
+    DIRECTORY=$PWD
+fi
+
+# if no name was specified for searching, set to wildcard
+if [[ -z $NAME ]]; then
+    NAME='*'
+fi
+
+# if no depth was set explicitly, set it to the default
+if [[ -z $DEPTH ]]; then
+    DEPTH=$DEPTH_DEFAULT
+fi
+
+# search directory and pipe the result to fzf
+printf "%s: searching directory '%s' (depth=%s)\n" "$PROG" "$DIRECTORY" "$DEPTH"
+
+if [[ ! -d $DIRECTORY ]]; then
+    printf "%s: error: '%s' is not a directory\n" "$PROG" "$DIRECTORY"
+    exit 1
+elif [[ -n $EXCLUDE_PATTERN ]]; then
+    printf "%s: exluding pattern '%s'\n" "$PROG" "$EXCLUDE_PATTERN"
+    SELECTED="$(find "$DIRECTORY" -maxdepth "$DEPTH" -iname "$NAME"| grep -v "$EXCLUDE_PATTERN" | fzf)"
+else
+    SELECTED="$(find "$DIRECTORY" -maxdepth "$DEPTH" -iname "$NAME" | grep -v '/\.git/' | grep -v '.git$' | fzf)"
+fi
+
+# open the selected file in vim
+"$EDITOR" "$SELECTED"
