@@ -14,4 +14,8 @@ else
 fi
 
 # print battery percentage
-echo "$perc"
+if [[ "$1" == --short ]]; then
+    echo "$perc" | awk '{ print $2 }'
+else
+    echo "$perc"
+fi
