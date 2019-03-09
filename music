@@ -1,0 +1,12 @@
+#!/bin/bash
+# Start or stop mpd, depending on options.
+# This script replaces systemd startup of
+# the mpd server to avoid the access denied
+# error.
+if [[ "$1" == '--start' ]]; then
+    sudo mpd
+    echo 'Started mpd.'
+elif [[ "$1" == '--stop' ]]; then
+    sudo kill -9 "$(lsof -t -i:6600)"
+    echo 'Stopped mpd.'
+fi
