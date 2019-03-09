@@ -3,10 +3,21 @@
 # This script replaces systemd startup of
 # the mpd server to avoid the access denied
 # error.
+function leave() {
+    echo 'Failed.'
+    exit 1
+}
+
 if [[ "$1" == '--start' ]]; then
-    sudo mpd
-    echo 'Started mpd.'
+    if sudo mpd; then
+        echo 'Started mpd.'
+    else
+        leave
+    fi
 elif [[ "$1" == '--stop' ]]; then
-    sudo kill -9 "$(lsof -t -i:6600)"
-    echo 'Stopped mpd.'
+    if sudo kill -9 "$(sudo lsof -t -i:6600)"; then
+        echo 'Stopped mpd.'
+    else
+        leave
+    fi
 fi
