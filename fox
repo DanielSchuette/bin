@@ -1,5 +1,11 @@
-#!/bin/sh
-firefox &
-
-# should put the firefox window into full screen mode
-xdotool search --sync --onlyvisible --class "firefox" windowactivate key F11
+#!/bin/bash
+# Open firefox with the first argument as a url.
+# `-t' indicates a new tab in an existing window,
+# `-w' indicates a new window.
+if [[ "$1" == -t ]]; then
+    firefox --new-tab "$2" &
+    printf "Opened %s in a new tab.\n" "$2"
+elif [[ "$1" == -w ]]; then
+    firefox --new-window "$2" &
+    printf "Opened %s in a new window.\n" "$2"
+fi

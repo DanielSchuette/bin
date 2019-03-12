@@ -1,0 +1,19 @@
+#!/bin/bash
+# A useful script to quickly sync folders on my Raspberry Pi
+# with folders on a development machine if they are connected
+# via ethernet.
+if [[ -n "$1" ]]; then
+    SRC="$1"
+else
+    SRC='.'
+fi
+
+if [[ -n "$2" ]]; then
+    DEST="$2"
+else
+    DEST='pi@10.42.0.193:/home/pi/code/asm'
+fi
+
+# run rsync command with either default or
+# user-specified source and destination
+rsync -avz "$SRC" "$DEST"
