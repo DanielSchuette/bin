@@ -1,0 +1,8 @@
+#!/bin/sh
+# Visualize bitcoin exchange rates in the terminal.
+if [ -n "$1" ]; then
+    month="$1"M
+else
+    month=6M
+fi
+curl rate.sx/btc@"$month"
