@@ -3,9 +3,9 @@
 # `-t' indicates a new tab in an existing window,
 # `-w' indicates a new window.
 if [[ "$1" == -t ]]; then
-    firefox --new-tab "$2" &
+    firefox --new-tab "$2" > /dev/null 2>&1
     printf "Opened %s in a new tab.\n" "$2"
 elif [[ "$1" == -w ]]; then
-    firefox --new-window "$2" &
+    firefox --new-window "$2" > /dev/null 2>&1
     printf "Opened %s in a new window.\n" "$2"
 fi

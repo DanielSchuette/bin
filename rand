@@ -1,0 +1,10 @@
+#!/bin/bash
+# Generate a random number between 1 and $1. It relies non-
+# POSIX features (i.e. $RANDOM).
+if [ -n "$1" ]; then
+    rand=$(( "$RANDOM"%"$1"+1 ))
+else
+    rand=$RANDOM
+fi
+
+echo $rand
