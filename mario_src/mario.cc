@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <sys/ioctl.h>
 #include <time.h>
 #include <unistd.h>
@@ -38,8 +39,8 @@ int main(int argc, char **argv)
     int frame_rate;
     struct winsize w;
 
-    if (argc > 1)
-        frame_rate = FRAME_RATE/atoi(argv[1]);
+    if (argc > 2 && strcmp(argv[1], "-f") == 0)
+        frame_rate = FRAME_RATE/atoi(argv[2]);
     else
         frame_rate = FRAME_RATE/10; /* 10 FPS */
 
