@@ -84,8 +84,15 @@ static void counter(int start, int end, int delay)
 
 static void sleep_and_clear_screen(long delay)
 {
+    int nanosec = 1000000000;
     struct timespec time;
-    time.tv_sec = 0;
+
+    if (delay >= nanosec) {
+        time.tv_sec = delay/nanosec;
+        delay -= time.tv_sec * nanosec;
+    } else {
+        time.tv_sec = 0;
+    }
     time.tv_nsec = delay;
     nanosleep(&time, NULL);
 
