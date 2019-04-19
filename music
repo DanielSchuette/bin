@@ -1,23 +1,23 @@
 #!/bin/bash
-# Start or stop mpd, depending on options.
-# This script replaces systemd startup of
-# the mpd server to avoid the access denied
-# error.
+# Start or stop mpd, depending on options. This script replaces systemd
+# startup of the mpd server to avoid an access denied error.
 function leave() {
     echo 'Failed.'
     exit 1
 }
 
-if [[ "$1" == '--start' ]]; then
+if [[ "$1" == 'start' ]]; then
     if sudo mpd; then
         echo 'Started mpd.'
     else
         leave
     fi
-elif [[ "$1" == '--stop' ]]; then
+elif [[ "$1" == 'stop' ]]; then
     if sudo kill -9 "$(sudo lsof -t -i:6600)"; then
         echo 'Stopped mpd.'
     else
         leave
     fi
+elif [[ "$1" == 'help' ]]; then
+    firefox --new-tab https://pkgbuild.com/~jelle/ncmpcpp/ &
 fi
