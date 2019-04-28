@@ -7,10 +7,24 @@
 #define MODE_FAIL           0
 #define MODE_CONTINUE       1
 
+/* ANSI escape codes for terminal colors */
+#define ANSI_RESET   "\x1b[0m"
+#define ANSI_BLACK   "\x1b[30m"
+#define ANSI_RED     "\x1b[31m"
+#define ANSI_GREEN   "\x1b[32m"
+#define ANSI_YELLOW  "\x1b[33m"
+#define ANSI_BLUE    "\x1b[34m"
+#define ANSI_MAGENTA "\x1b[35m"
+#define ANSI_CYAN    "\x1b[36m"
+#define ANSI_WHITE   "\x1b[37m"
+
 const static char* help_msg =
 "Counts to 25 minutes in 1 second intervals, asking you to do work. Then,\n"
 "a break of 5 minutes is recommended. These intervals might be changed.\n"
 "Author: Daniel Schuette <d.schuette@online.de>\n"
+"Date: 2019/04/28\n"
+"Sources: https://github.com/DanielSchuette/bin/tree/master/timer_src\n"
+"License: GPLv3 (https://www.gnu.org/licenses/gpl-3.0.en.html)\n"
 "\n"
 "USAGE:\n"
 "\ttimer [FLAGS] [OPTIONS]\n"
@@ -26,7 +40,8 @@ const static char* help_msg =
 typedef struct ptimer {
     int secs;
     int mins;
-    int iter; /* iterations of the timer */
+    int num_work;  /* number of work cycles */
+    int num_break; /* number of break cycles */
 } ptimer;
 
 typedef struct configs {
@@ -37,7 +52,7 @@ typedef struct configs {
 
 /* global because it's tedious to pass these around (and signals need them) */
 configs config = { WORK_TIME_DEFAULT, BREAK_TIME_DEFAULT, NULL };
-ptimer timer = { 0, 0, 0 };
+ptimer timer = { 0, 0, 0, 0 };
 
 /* print_and_sleep: print `msg' and timer information, then sleep `s' secs. */
 void print_and_sleep(ptimer *, int, const char *);
@@ -59,7 +74,7 @@ void clear_line(void);
 void consume_args(int, char **);
 
 /* get_option: add an option to `config' and modify argc & argv. */
-void get_option(int *, char ***, const char *, int);
+void get_option(int *, char ***, const char *);
 
 /* bad_option: used by `consume_args'; make sure to provide a valid mode. */
 void bad_option(int, const char *, int);

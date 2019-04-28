@@ -34,8 +34,9 @@ int main(int argc, char **argv)
 
 void print_and_sleep(ptimer *t, int s, const char *msg)
 {
-    fprintf(stderr, "%s[%2dm:%2ds, done %d time%s]\r",
-            msg, t->mins, t->secs, t->iter, t->iter==1 ? "" : "s");
+    fprintf(stderr, "%s[%s%2dm:%2ds%s, done %s%d%s time%s]\r",
+            msg, ANSI_GREEN, t->mins, t->secs, ANSI_RESET, ANSI_YELLOW,
+            t->num_work, ANSI_RESET, t->num_work==1 ? "" : "s");
     sleep(s);
 }
 
@@ -54,10 +55,12 @@ void take_break(ptimer *t)
     /* reset timer and terminal for break */
     t->secs = 0;
     t->mins = 0;
+    t->num_work++;
     clear_line();
 
     while (is_break(t)) {
-        fprintf(stderr, "Take a break [%2dm:%2ds]\r", t->mins, t->secs);
+        fprintf(stderr, "Take a break [%s%2dm:%2ds%s]\r",
+                ANSI_GREEN, t->mins, t->secs, ANSI_RESET);
         sleep(1);
         inc(t);
     }
@@ -65,7 +68,7 @@ void take_break(ptimer *t)
     /* reset timer and terminal for main loop use */
     t->secs = 0;
     t->mins = 0;
-    t->iter++;
+    t->num_break++;
     clear_line();
 }
 
@@ -106,58 +109,60 @@ void consume_args(int argc, char **argv)
 
         /* interpret options & their arguments */
         if (!strcmp(*argv, "--work") || !strcmp(*argv, "-w")) {
-            get_option(&argc, &argv, "--work", 0);
+            get_option(&argc, &argv, "--work");
             continue;
         }
         if (!strcmp(*argv, "--break") || !strcmp(*argv, "-b")) {
-            get_option(&argc, &argv, "--break", 1);
+            get_option(&argc, &argv, "--break");
             continue;
         }
         if (!strcmp(*argv, "--log-file") || !strcmp(*argv, "-f")) {
-            get_option(&argc, &argv, "--log-file", 2);
+            get_option(&argc, &argv, "--log-file");
             continue;
         }
         bad_option(0, *argv, MODE_CONTINUE);
     }
 }
 
-void get_option(int *argc, char ***argv, const char *opt_name, int mode)
+void get_option(int *argc, char ***argv, const char *opt_name)
 {
-    int ntime;
+    int ntime = 0;
 
     if (*argc > 1) { /* check if there are still values */
         /* modify argc & argv and parse the parameter */
         (*argv)++;
         (*argc)--;
 
-        if (mode == 0 || mode == 1) {
+        if (!strcmp("--work", opt_name) || !strcmp("--break", opt_name)) {
             ntime = atoi(**argv);
             if (ntime < 1)
                 bad_option(ntime, opt_name, MODE_FAIL);
         }
-        if (mode == 2) {
+        if (!strcmp("--log-file", opt_name)) {
             config.save_path = (char *)malloc(BUFSIZ*sizeof(char));
             strncpy(config.save_path, **argv, BUFSIZ);
         }
 
         /* conditionally add parsed parameter to configs */
-        if (mode == 0)
+        if (!strcmp("--work", opt_name))
             config.work_time = ntime;
-        if (mode == 1)
+        if (!strcmp("--break", opt_name))
             config.break_time = ntime;
     } else {
-        fprintf(stderr, "Warning: Need value after %s.\n", opt_name);
+        fprintf(stderr, "%sWarning%s: Need value after %s.\n",
+                ANSI_YELLOW, ANSI_RESET, opt_name);
     }
 }
 
 void bad_option(int val, const char *option, int mode)
 {
     if (mode == MODE_FAIL) {
-        fprintf(stderr, "Error: Provided bad value %d to %s (must be int>0).\n",
-                val, option);
+        fprintf(stderr, "%sError%s: Provided bad value %d to %s (must be int>0).\n",
+                ANSI_RED, ANSI_RESET, val, option);
         exit(1);
     } else if (mode == MODE_CONTINUE) {
-        fprintf(stderr, "Warning: Provided bad option %s.\n", option);
+        fprintf(stderr, "%sWarning%s: Provided bad option %s.\n",
+                ANSI_YELLOW, ANSI_RESET, option);
     }
 }
 
@@ -165,7 +170,7 @@ void sigint_handler(int signum)
 {
     if (config.save_path)
         save_stats(config.save_path);
-    fprintf(stderr, "\n\nDone.\n");
+    fprintf(stderr, "\n\n%sDone%s.\n", ANSI_GREEN, ANSI_RESET);
 
     /* free resources and go */
     free(config.save_path);
@@ -181,8 +186,9 @@ void save_stats(const char *path)
 
     /* open the log file, calculate the time and save it */
     file = fopen(path, "a");
-    elapsed = (timer.iter*(config.work_time*60+config.break_time*60)+
-               (timer.mins*60+timer.secs)); /* in secs */
+    elapsed = (timer.num_work*config.work_time*60)+   /* completed work secs */
+              (timer.num_break*config.break_time*60)+ /* completed break secs */
+              (timer.mins*60+timer.secs);             /* secs on clock */
     fprintf(file, "[%2d/%02d/%d %2dh:%2dm]\t%dmins (%dsecs)\n",
             tm->tm_year+1900, tm->tm_mon+1, tm->tm_mday,
             tm->tm_hour, tm->tm_min, elapsed/60, elapsed);
@@ -203,9 +209,15 @@ void setup_term(void)
 
 void print_info(void)
 {
-    fprintf(stderr, "Length of work time: %d, length of break time: %d.\n",
-            config.work_time, config.break_time);
+    fprintf(stderr, "Length of work time: %s%dmin%s%s, "
+            "length of break time: %s%dmin%s%s.\n",
+            ANSI_GREEN, config.work_time,
+            config.work_time==0 ? "" : "s", ANSI_RESET,
+            ANSI_RED, config.break_time,
+            config.break_time==0 ? "" : "s", ANSI_RESET);
     if (config.save_path)
-        fprintf(stderr, "Saving logs to `%s'.\n", config.save_path);
-    fprintf(stderr, "Exit with ctrl+c.\n\n");
+        fprintf(stderr, "Saving logs to `%s%s%s'.\n",
+                ANSI_BLUE, config.save_path, ANSI_RESET);
+    fprintf(stderr, "Exit with %sctrl+c%s.\n\n",
+            ANSI_RED, ANSI_RESET);
 }
