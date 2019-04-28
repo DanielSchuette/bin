@@ -53,6 +53,9 @@ void clear_line(void);
 /* consume_args: adds parsed options to global `config' struct. */
 void consume_args(int, char **);
 
+/* get_option: add an option to `config' and modify argc & argv. */
+void get_option(int *, char ***, const char *, int);
+
 /* bad_option: used by `consume_args'; make sure to provide a valid mode. */
 void bad_option(int, const char *, int);
 

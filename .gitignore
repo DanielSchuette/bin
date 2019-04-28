@@ -2,6 +2,11 @@
 man/*
 share/*
 
+# binaries created from sources in *_src/ dirs
+mario
+peach
+timer
+
 # binaries that other programs installed into ~/bin/
 # they're mostly compiled and thus are not portable
 bundle

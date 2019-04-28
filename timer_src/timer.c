@@ -10,7 +10,12 @@ int main(int argc, char **argv)
 {
     ptimer timer = { 0, 0, 0 };
 
+    /* parse arguments and print them out */
     consume_args(argc, argv);
+    fprintf(stderr, "Length of work time: %d, length of break time: %d\n",
+            config.work_time, config.break_time);
+
+    /* loop infinitely, changing state from work to break to work */
     while (1) {
         if (is_work(&timer)) {
             print_and_sleep(&timer, 1, "Time to Work ");
@@ -88,46 +93,46 @@ void clear_line(void)
 
 void consume_args(int argc, char **argv)
 {
-    int ntime;
-
     while (--argc > 0 && ++argv) {
         /* interpret flags */
         if (!strcmp(*argv, "--help") || !strcmp(*argv, "-h")) {
             fprintf(stderr, "%s", help_msg);
             exit(0);
-            continue;
         }
-        /* interpret options */
+
+        /* interpret options & their arguments */
         if (!strcmp(*argv, "--work") || !strcmp(*argv, "-w")) {
-            if (argc > 1) { /* check if there are still values */
-                argv++;
-                argc--;
-                ntime = atoi(*argv);
-                if (ntime < 1)
-                    bad_option(ntime, "--work", MODE_FAIL);
-                config.work_time = ntime;
-            } else {
-                fprintf(stderr, "Warning: Need value after %s.\n",
-                        "--work");
-            }
+            get_option(&argc, &argv, "--work", 0);
             continue;
         }
-        /* TODO: could reduce some redundancy here */
         if (!strcmp(*argv, "--break") || !strcmp(*argv, "-b")) {
-            if (argc > 1) {
-                argv++;
-                argc--;
-                ntime = atoi(*argv);
-                if (ntime < 1)
-                    bad_option(ntime, "--break", MODE_FAIL);
-                config.break_time = ntime;
-            } else {
-                fprintf(stderr, "Warning: Need value after %s.\n",
-                        "--break");
-            }
+            get_option(&argc, &argv, "--break", 1);
             continue;
         }
         bad_option(0, *argv, MODE_CONTINUE);
+    }
+}
+
+void get_option(int *argc, char ***argv, const char *opt_name, int mode)
+{
+    int ntime;
+
+    if (*argc > 1) { /* check if there are still values */
+        /* modify argc & argv and parse the parameter */
+        (*argv)++;
+        (*argc)--;
+        ntime = atoi(**argv);
+
+        if (ntime < 1)
+            bad_option(ntime, opt_name, MODE_FAIL);
+
+        /* conditionally add parsed parameter to configs */
+        if (mode == 0)
+            config.work_time = ntime;
+        if (mode == 1)
+            config.break_time = ntime;
+    } else {
+        fprintf(stderr, "Warning: Need value after %s.\n", opt_name);
     }
 }
 
