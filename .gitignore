@@ -2,6 +2,9 @@
 man/*
 share/*
 
+# ignore log files
+times.log
+
 # binaries created from sources in *_src/ dirs
 mario
 peach

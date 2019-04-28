@@ -1,6 +1,8 @@
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <termios.h>
 #include <time.h>
 #include <unistd.h>
 
@@ -8,12 +10,13 @@
 
 int main(int argc, char **argv)
 {
-    ptimer timer = { 0, 0, 0 };
+    setup_term();
+    if (signal(SIGINT, sigint_handler) == SIG_ERR)
+        fprintf(stderr, "Failed to catch signal.\n");
 
     /* parse arguments and print them out */
     consume_args(argc, argv);
-    fprintf(stderr, "Length of work time: %d, length of break time: %d\n",
-            config.work_time, config.break_time);
+    print_info();
 
     /* loop infinitely, changing state from work to break to work */
     while (1) {
@@ -89,6 +92,7 @@ void clear_line(void)
     for (int i=0; i<spaces; empty[i++] = ' ')
         ;
     fprintf(stderr, "%s\r", empty);
+    free(empty);
 }
 
 void consume_args(int argc, char **argv)
@@ -109,6 +113,10 @@ void consume_args(int argc, char **argv)
             get_option(&argc, &argv, "--break", 1);
             continue;
         }
+        if (!strcmp(*argv, "--log-file") || !strcmp(*argv, "-f")) {
+            get_option(&argc, &argv, "--log-file", 2);
+            continue;
+        }
         bad_option(0, *argv, MODE_CONTINUE);
     }
 }
@@ -121,10 +129,16 @@ void get_option(int *argc, char ***argv, const char *opt_name, int mode)
         /* modify argc & argv and parse the parameter */
         (*argv)++;
         (*argc)--;
-        ntime = atoi(**argv);
 
-        if (ntime < 1)
-            bad_option(ntime, opt_name, MODE_FAIL);
+        if (mode == 0 || mode == 1) {
+            ntime = atoi(**argv);
+            if (ntime < 1)
+                bad_option(ntime, opt_name, MODE_FAIL);
+        }
+        if (mode == 2) {
+            config.save_path = (char *)malloc(BUFSIZ*sizeof(char));
+            strncpy(config.save_path, **argv, BUFSIZ);
+        }
 
         /* conditionally add parsed parameter to configs */
         if (mode == 0)
@@ -145,4 +159,53 @@ void bad_option(int val, const char *option, int mode)
     } else if (mode == MODE_CONTINUE) {
         fprintf(stderr, "Warning: Provided bad option %s.\n", option);
     }
+}
+
+void sigint_handler(int signum)
+{
+    if (config.save_path)
+        save_stats(config.save_path);
+    fprintf(stderr, "\n\nDone.\n");
+
+    /* free resources and go */
+    free(config.save_path);
+    exit(0);
+}
+
+void save_stats(const char *path)
+{
+    FILE *file;
+    time_t t = time(NULL);
+    struct tm *tm = localtime(&t);
+    int elapsed;
+
+    /* open the log file, calculate the time and save it */
+    file = fopen(path, "a");
+    elapsed = (timer.iter*(config.work_time*60+config.break_time*60)+
+               (timer.mins*60+timer.secs)); /* in secs */
+    fprintf(file, "[%2d/%02d/%d %2dh:%2dm]\t%dmins (%dsecs)\n",
+            tm->tm_year+1900, tm->tm_mon+1, tm->tm_mday,
+            tm->tm_hour, tm->tm_min, elapsed/60, elapsed);
+    fclose(file);
+}
+
+void setup_term(void)
+{
+    struct termios t;
+
+    /* disable ECHOCTL, not POSIX though so compile conditionally */
+    tcgetattr(0, &t);
+#ifdef ECHOCTL
+    t.c_lflag &= ~ECHOCTL;
+#endif
+    tcsetattr(0, TCSANOW, &t);
+}
+
+void print_info(void)
+{
+    fprintf(stderr, "Length of work time: %d, length of break time: %d.\n",
+            config.work_time, config.break_time);
+    if (config.save_path)
+        fprintf(stderr, "Saving logs to `%s'.\n", config.save_path);
+    fprintf(stderr, "Exit with ctrl+c.\n\n");
 }

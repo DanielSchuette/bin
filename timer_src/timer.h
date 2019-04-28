@@ -1,5 +1,7 @@
 #ifndef __TIMER_H__
 
+#include <stdlib.h>
+
 #define WORK_TIME_DEFAULT   25
 #define BREAK_TIME_DEFAULT  5
 #define MODE_FAIL           0
@@ -18,7 +20,8 @@ const static char* help_msg =
 "\n"
 "OPTIONS:\n"
 "\t-w, --work <TIME>\tChange the default work time to TIME\n"
-"\t-b, --break <TIME>\tChange the default break time to TIME\n";
+"\t-b, --break <TIME>\tChange the default break time to TIME\n"
+"\t-f, --log-file <FILE>\tPath to a log file (without, no logs are saved)\n";
 
 typedef struct ptimer {
     int secs;
@@ -29,10 +32,12 @@ typedef struct ptimer {
 typedef struct configs {
     int work_time;
     int break_time;
+    char *save_path;
 } configs;
 
-/* global because it's tedious to pass it around */
-configs config = { WORK_TIME_DEFAULT, BREAK_TIME_DEFAULT };
+/* global because it's tedious to pass these around (and signals need them) */
+configs config = { WORK_TIME_DEFAULT, BREAK_TIME_DEFAULT, NULL };
+ptimer timer = { 0, 0, 0 };
 
 /* print_and_sleep: print `msg' and timer information, then sleep `s' secs. */
 void print_and_sleep(ptimer *, int, const char *);
@@ -58,5 +63,17 @@ void get_option(int *, char ***, const char *, int);
 
 /* bad_option: used by `consume_args'; make sure to provide a valid mode. */
 void bad_option(int, const char *, int);
+
+/* sigint_handler: catch signals to be able to save stats before exiting. */
+void sigint_handler(int);
+
+/* save_stats: save some stats to a log file. */
+void save_stats(const char *);
+
+/* setup_term: disable ECHOCTL, i.e. don't print ^C on sigint. */
+void setup_term(void);
+
+/* print_info: print info about initial setup to terminal. */
+void print_info(void);
 
 #endif /* __TIMER_H__ */
