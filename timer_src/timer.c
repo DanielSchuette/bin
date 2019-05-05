@@ -191,7 +191,7 @@ void save_stats(const char *path)
               (timer.mins*60+timer.secs);             /* secs on clock */
     fprintf(file, "[%2d/%02d/%d %2dh:%2dm]\t%dhrs\t%dmins (%dsecs)\n",
             tm->tm_year+1900, tm->tm_mon+1, tm->tm_mday,
-            tm->tm_hour, tm->tm_min, elapsed/60, elapsed/60, elapsed);
+            tm->tm_hour, tm->tm_min, elapsed/3600, elapsed/60, elapsed);
     fclose(file);
 }
 
