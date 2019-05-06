@@ -1,0 +1,4 @@
+#!/bin/sh
+# Adopted from https://github.com/alx741/vinfo.
+# Use Vim to browse info pages without the nasty info viewer.
+vim -c "Vinfo $1" -c 'silent only'

@@ -1,5 +1,6 @@
 #!/bin/bash
 # Select files with fzf and open them in the default editor.
+# TODO: move `find' usage to `fd' for MUCH better performance
 PROG=fuz # program name as displayed in help and error messages
 DEPTH_DEFAULT=3 # default depth for `find'
 
@@ -7,6 +8,9 @@ DEPTH_DEFAULT=3 # default depth for `find'
 if [[ -z $(command -v fzf) ]]; then
     printf "%s: error: fzf is not installed\n" "$PROG"
     exit 1
+elif [[ -z $(command -v fd) ]]; then
+    # this might cause problems because `fd' is a floppy disk utility, too
+    printf "%s: warning: fd-find is not installed\n" "$PROG"
 elif [[ -z $EDITOR ]]; then
     printf "%s: using vim as the default editor (change by setting EDITOR)\n" "$PROG"
     EDITOR=vim
