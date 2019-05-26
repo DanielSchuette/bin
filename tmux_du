@@ -1,0 +1,6 @@
+#!/bin/sh
+# Use this script to show disk usage in tmux' statusbar.
+root=$(df -h | grep 'root' | awk '{print $4}')
+home=$(df -h | grep 'home' | awk '{print $4}')
+
+printf "%s %s" "$root" "$home"
