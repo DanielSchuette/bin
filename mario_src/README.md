@@ -5,4 +5,4 @@ man -l mario.1
 sudo cp mario.1 /usr/local/share/man/man1/
 ```
 
-Install `mario` into a suitable directory, e.g. `~/bin` or anything that's in your path.
+Install `mario` into a suitable directory, e.g. `~/bin` or anything that's in your path. The `Makefile` assumes you have such a directory.
