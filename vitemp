@@ -1,0 +1,13 @@
+#!/bin/sh
+printf "Using %s as an editor.\n" "$EDITOR"
+tmpfile=$(mktemp -p .)
+printf "Created temporary file %s.\n" "$tmpfile"
+
+# open temporary file with selected editor
+"$EDITOR" "$tmpfile"
+
+# conditionally remove temporary file
+if [ "$1" = '--remove' ] || [ "$1" = '-r' ]; then
+    printf "Removing temporary file %s.\n" "$tmpfile"
+    rm "$tmpfile"
+fi
