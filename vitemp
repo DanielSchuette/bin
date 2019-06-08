@@ -1,4 +1,6 @@
 #!/bin/sh
+# Create a temp file and open it in a text editor. Automatic removal is done
+# with `--remove' or `-r'.
 printf "Using %s as an editor.\n" "$EDITOR"
 tmpfile=$(mktemp -p .)
 printf "Created temporary file %s.\n" "$tmpfile"
