@@ -1,0 +1,8 @@
+#!/bin/sh
+# Compare two directories. Requires two command line parameters.
+TMP1=dirdiff_tmp1
+TMP2=dirdiff_tmp2
+ls -l "$1" > "$TMP1"
+ls -l "$2" > "$TMP2"
+diff -s "$TMP1" "$TMP2"
+rm "$TMP1" "$TMP2"
