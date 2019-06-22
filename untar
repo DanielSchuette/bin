@@ -1,2 +1,2 @@
 #!/bin/sh
-tar -xvzf $1
+tar -xvzf "$1"
