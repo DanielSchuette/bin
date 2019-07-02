@@ -20,4 +20,7 @@ elif [[ "$1" == 'stop' ]]; then
     fi
 elif [[ "$1" == 'help' ]]; then
     firefox --new-tab https://pkgbuild.com/~jelle/ncmpcpp/ &
+else
+    echo 'Try any of `start'\'', `stop'\'', `help'\''.'
+    exit 0
 fi
