@@ -1,2 +1,2 @@
 #!/bin/sh
-st -f "Monospace:size=15" -g 140x80 &
+st -f "Monospace:size=13" -g 140x80 &
