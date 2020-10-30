@@ -5,6 +5,12 @@ share/*
 # ignore log files
 times.log
 
+# ignore foreign build directories
+dwm/
+st/
+yay/
+fonts/
+
 # binaries created from sources in *_src/ dirs
 mario
 peach
