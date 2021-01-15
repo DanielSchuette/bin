@@ -9,6 +9,8 @@ perc=$(upower -i "$battery" | grep 'percent' | awk '{print $1,$2}')
 # check if charging
 if [[ "$state" == "charging" ]]; then
     echo "I'm charging"
+elif [[ "$state" == "fully-charged" ]]; then
+    echo "Fully charged"
 else
     echo "$life"
 fi

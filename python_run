@@ -1,0 +1,4 @@
+#!/bin/sh
+python -m mypy "$1"
+python -m flake8 "$1"
+python "$1"
