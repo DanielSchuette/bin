@@ -1,2 +1,2 @@
 #!/bin/sh
-st -f "Monospace:size=13" -g 140x80 &
+st -f "Source Code Pro:size=9" -g 140x80 &
