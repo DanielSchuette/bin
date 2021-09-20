@@ -1,0 +1,2 @@
+#!/bin/sh
+firefox https://wikipedia.org/wiki/"$1"
