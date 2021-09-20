@@ -1,2 +1,2 @@
 #!/bin/sh
-st -f "Source Code Pro:size=9" -g 140x80 &
+st -f "Source Code Pro:size=7" -g 140x80 &
