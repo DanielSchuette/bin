@@ -1,3 +1,6 @@
+# ignore haskell's language server files
+haskell*
+
 # ignore Bochs man files
 man/*
 share/*
@@ -10,6 +13,7 @@ dwm/
 st/
 yay/
 fonts/
+assets/
 
 # binaries created from sources in *_src/ dirs
 mario

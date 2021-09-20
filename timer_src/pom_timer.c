@@ -1,4 +1,22 @@
+/* A minimalistic, terminal-based Pomodoro Timer.
+ *
+ * Pom_Timer Copyright (C) 2021 Daniel Schuette
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
 #include <signal.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -6,7 +24,7 @@
 #include <time.h>
 #include <unistd.h>
 
-#include "timer.h"
+#include "pom_timer.h"
 
 int main(int argc, char **argv)
 {
@@ -19,7 +37,7 @@ int main(int argc, char **argv)
     print_info();
 
     /* loop infinitely, changing state from work to break to work */
-    while (1) {
+    while (true) {
         if (is_work(&timer)) {
             print_and_sleep(&timer, 1, "Time to Work ");
             inc(&timer);
@@ -53,9 +71,7 @@ void inc(ptimer *t)
 void take_break(ptimer *t)
 {
     /* reset timer and terminal for break */
-    t->secs = 0;
-    t->mins = 0;
-    t->num_work++;
+    t->secs = 0; t->mins = 0; t->num_work++;
     clear_line();
 
     while (is_break(t)) {
@@ -66,24 +82,22 @@ void take_break(ptimer *t)
     }
 
     /* reset timer and terminal for main loop use */
-    t->secs = 0;
-    t->mins = 0;
-    t->num_break++;
+    t->secs = 0; t->mins = 0; t->num_break++;
     clear_line();
 }
 
-int is_work(ptimer *t)
+bool is_work(ptimer *t)
 {
     if (t->mins == config.work_time)
-        return 0;
-    return 1;
+        return false;
+    return true;
 }
 
-int is_break(ptimer *t)
+bool is_break(ptimer *t)
 {
     if (t->mins == config.break_time)
-        return 0;
-    return 1;
+        return false;
+    return true;
 }
 
 void clear_line(void)
@@ -91,10 +105,14 @@ void clear_line(void)
     char *empty;
     int spaces = 80; /* better use terminal width here */
 
-    empty = (char *)malloc(spaces * sizeof(char));
-    for (int i=0; i<spaces; empty[i++] = ' ')
+    empty = (char *)malloc(spaces);
+    for (int i = 0; i < spaces; empty[i++] = ' ')
         ;
+    /* If we run over the line ending and end up in the next line, this will
+     * break.
+     */
     fprintf(stderr, "%s\r", empty);
+
     free(empty);
 }
 
@@ -149,7 +167,7 @@ void get_option(int *argc, char ***argv, const char *opt_name)
         if (!strcmp("--break", opt_name))
             config.break_time = ntime;
     } else {
-        fprintf(stderr, "%sWarning%s: Need value after %s.\n",
+        fprintf(stderr, "%swarning%s: Need value after %s.\n",
                 ANSI_YELLOW, ANSI_RESET, opt_name);
     }
 }
@@ -157,49 +175,59 @@ void get_option(int *argc, char ***argv, const char *opt_name)
 void bad_option(int val, const char *option, int mode)
 {
     if (mode == MODE_FAIL) {
-        fprintf(stderr, "%sError%s: Provided bad value %d to %s (must be int>0).\n",
-                ANSI_RED, ANSI_RESET, val, option);
+        fprintf(stderr, "%serror%s: Provided bad value %d to %s "
+                "(must be int > 0).\n", ANSI_RED, ANSI_RESET, val, option);
         exit(1);
     } else if (mode == MODE_CONTINUE) {
-        fprintf(stderr, "%sWarning%s: Provided bad option %s.\n",
+        fprintf(stderr, "%swarning%s: Provided bad option %s.\n",
                 ANSI_YELLOW, ANSI_RESET, option);
     }
 }
 
 void sigint_handler(int signum)
 {
-    if (config.save_path)
-        save_stats(config.save_path);
+    (void)signum; /* gcc doesn't want us to omit the param name */
+
+    if (config.save_path) {
+        save_stats(&config);
+    } else {
+        fprintf(stderr, "\nSummary:\n");
+        print_stats(&config, stderr);
+    }
     fprintf(stderr, "\n\n%sDone%s.\n", ANSI_GREEN, ANSI_RESET);
 
-    /* free resources and go */
     free(config.save_path);
     exit(0);
 }
 
-void save_stats(const char *path)
+void save_stats(const configs *config)
 {
     FILE *file;
+
+    file = fopen(config->save_path, "a");
+    print_stats(config, file);
+    fclose(file);
+}
+
+void print_stats(const configs* config, FILE *stream)
+{
+    int elapsed;
     time_t t = time(NULL);
     struct tm *tm = localtime(&t);
-    int elapsed;
 
-    /* open the log file, calculate the time and save it */
-    file = fopen(path, "a");
-    elapsed = (timer.num_work*config.work_time*60)+   /* completed work secs */
-              (timer.num_break*config.break_time*60)+ /* completed break secs */
-              (timer.mins*60+timer.secs);             /* secs on clock */
-    fprintf(file, "[%2d/%02d/%d %2dh:%2dm]\t%dhrs\t%dmins (%dsecs)\n",
+    elapsed = (timer.num_work*config->work_time*60)+   /* completed work secs */
+              (timer.num_break*config->break_time*60)+ /* completed break secs */
+              (timer.mins*60+timer.secs);              /* secs on clock */
+    fprintf(stream, "[%2d/%02d/%d %2dh:%2dm]\t%dhrs\t%dmins (%dsecs)\n",
             tm->tm_year+1900, tm->tm_mon+1, tm->tm_mday,
             tm->tm_hour, tm->tm_min, elapsed/3600, elapsed/60, elapsed);
-    fclose(file);
 }
 
 void setup_term(void)
 {
     struct termios t;
 
-    /* disable ECHOCTL, not POSIX though so compile conditionally */
+    /* disable ECHOCTL, not std-c though so compile conditionally */
     tcgetattr(0, &t);
 #ifdef ECHOCTL
     t.c_lflag &= ~ECHOCTL;
@@ -218,6 +246,9 @@ void print_info(void)
     if (config.save_path)
         fprintf(stderr, "Saving logs to `%s%s%s'.\n",
                 ANSI_BLUE, config.save_path, ANSI_RESET);
+    else
+        fprintf(stderr, "%sNot%s saving logs.\n",
+                ANSI_BLUE, ANSI_RESET);
     fprintf(stderr, "Exit with %sctrl+c%s.\n\n",
             ANSI_RED, ANSI_RESET);
 }
