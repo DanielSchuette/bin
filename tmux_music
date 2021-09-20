@@ -1,8 +1,8 @@
 #!/bin/bash
-# Display music nicely formated in tmux. A script is required because tmux will
-# miss-interpret the format string. Also, since ncmpcpp/mpd does not handle ut8
-# very well, only the file name (.mp3 is stripped off) can be used (currently,
-# only the artist is displayed).
+# Display music nicely formatted in tmux. A script is required because tmux
+# will miss-interpret the format string. Also, since ncmpcpp/mpd does not
+# handle utf8 very well, only the file name (.mp3 is stripped off) can be used
+# (currently, only the artist is displayed).
 SONG=$(ncmpcpp --current-song='%a')
 MAXLEN=10
 # alternatively, use:
