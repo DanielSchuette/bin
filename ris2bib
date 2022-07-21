@@ -1,0 +1,5 @@
+#!/bin/sh
+# Nature provides citations for its articles via the oldfashioned RIS format.
+# This little script can be used to convert RIS to BIB. It depends on the
+# bibutils package.
+ris2xml "$1" | xml2bib -b > "$2"
