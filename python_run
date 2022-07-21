@@ -1,4 +1,6 @@
 #!/bin/sh
-python -m mypy "$1"
-python -m flake8 "$1"
-python "$1"
+PYTHON_INSTALL='python3.10'
+
+"$PYTHON_INSTALL" -m mypy "$1"
+"$PYTHON_INSTALL" -m flake8 "$1"
+"$PYTHON_INSTALL" "$1"
