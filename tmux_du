@@ -5,7 +5,7 @@
 #
 # printf "%s %s" "$root" "$home"
 
-disk_name='/dev/nvme0n1p2'
+disk_name='/dev/sda'
 total=$(df -h | grep $disk_name | awk '{printf "%s (%s used)", $4, $5}')
 
 printf "%s" "$total"
