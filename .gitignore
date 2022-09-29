@@ -1,6 +1,9 @@
 # ignore haskell's language server files
 haskell*
 
+# ignore Quarto
+quarto*
+
 # ignore Bochs man files
 man/*
 share/*
